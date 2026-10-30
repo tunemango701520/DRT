@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>沉浸式情緒解憂扭蛋機</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1c29 0%, #2f3640 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #f5f6fa;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: #a4b0be;
+            margin-bottom: 24px;
+        }
+
+        /* 心情選擇區 */
+        .mood-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .mood-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px 8px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .mood-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .mood-btn.active {
+            background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+            border-color: transparent;
+            box-shadow: 0 4px 15px rgba(0, 210, 255, 0.4);
+            font-weight: bold;
+        }
+
+        /* 扭蛋機視覺區 */
+        .gachapon-machine {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 24px auto;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 50%;
+            border: 4px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        .capsule-ball {
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle at 30% 30%, #ff6b81, #eb2f06);
+            border-radius: 50%;
+            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.5), 0 8px 20px rgba(235,47,6, 0.4);
+            position: relative;
+            transition: transform 0.5s ease;
+        }
+
+        /* 旋轉動畫 */
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            20% { transform: translate(-3px, 0px) rotate(-10deg); }
+            40% { transform: translate(3px, 2px) rotate(10deg); }
+            60% { transform: translate(-1px, -1px) rotate(0deg); }
+            80% { transform: translate(3px, 1px) rotate(5deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        .shaking {
+            animation: shake 0.5s ease-in-out infinite;
+        }
+
+        /* 抽扭蛋按鈕 */
+        .draw-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #f39c12 0%, #d35400 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .draw-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(243, 156, 18, 0.6);
+        }
+
+        .draw-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* 結果卡片區 */
+        .result-card {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: none;
+            animation: fadeIn 0.5s ease forwards;
+            text-align: left;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-title {
+            font-size: 0.85rem;
+            color: #00d2ff;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .result-quote {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .result-tip {
+            font-size: 0.9rem;
+            color: #dfe4ea;
+            border-left: 3px solid #00d2ff;
+            padding-left: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>✨ 沉浸式情緒解憂扭蛋機</h1>
+        <p class="subtitle">選一個你現在的心情，讓 AI 帶你轉出一份療癒處方</p>
+
+        <!-- 心情選擇 -->
+        <div class="mood-selector">
+            <button class="mood-btn active" data-mood="anxious">🤯 焦慮崩潰</button>
+            <button class="mood-btn" data-mood="tired">🔋 累癱發電</button>
+            <button class="mood-btn" data-mood="lost">🧭 迷茫尋路</button>
+        </div>
+
+        <!-- 扭蛋視覺 -->
+        <div class="gachapon-machine">
+            <div class="capsule-ball" id="capsule"></div>
+        </div>
+
+        <!-- 互動按鈕 -->
+        <button class="draw-btn" id="drawBtn">轉出一顆解憂扭蛋</button>
+
+        <!-- 結果展示卡片 -->
+        <div class="result-card" id="resultCard">
+            <div class="result-title" id="resTitle">專屬解憂處方</div>
+            <div class="result-quote" id="resQuote">「載入中...」</div>
+            <div class="result-tip" id="resTip">小建議：深呼吸三次。</div>
+        </div>
+    </div>
+
+    <script>
+        // 資料庫：不同心情對應的解憂金句與行動建議
+        const database = {
+            anxious: {
+                title: "🤯 焦慮解方：把大山化為微塵",
+                quotes: [
+                    "「擔心明天的事，只是提前消耗今天的力氣。現在，我們只要呼吸就好。」",
+                    "「如果事情可以解決，就不必擔心；如果不能解決，擔心也無用。」",
+                    "「允許自己暫時表現不好，這世界不會因為你少拼一小時而毀滅。」"
+                ],
+                tips: "建議立刻離開座位，去喝一杯常溫開水，並閉眼數 30 秒的呼吸。"
+            },
+            tired: {
+                title: "🔋 疲憊解方：徹底允許自己關機",
+                quotes: [
+                    "「你不是機器，不需要 24 小時高效運轉。累了就躺平，這叫合法回血。」",
+                    "「休息不是浪費時間，是為了走更長的路。甚至，不走也沒關係。」",
+                    "「今天已經做得很棒了，剩下的事情明天再說，地球會自己轉動的。」"
+                ],
+                tips: "建議放下手機，平躺放鬆肩膀，聽一首無歌詞的輕音樂 5 分鐘。"
+            },
+            lost: {
+                title: "🧭 迷茫解方：在混亂中找到微光",
+                quotes: [
+                    "「迷茫是因為你正在往更高的地方走，視野變大了，所以才看不清遠方。」",
+                    "「不需要看清整條路，你只需要看清腳下的下一步。」",
+                    "「每條看似走錯的路，其實都是在排除錯誤答案，帶你走向對的地方。」"
+                ],
+                tips: "拿出一張紙，把腦中的雜亂思緒全部寫下來，只挑出其中一項「今天能做的小事」完成它。"
+            }
+        };
+
+        let currentMood = 'anxious';
+
+        // 綁定心情按鈕事件
+        const moodButtons = document.querySelectorAll('.mood-btn');
+        moodButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                moodButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentMood = btn.getAttribute('data-mood');
+            });
+        });
+
+        // 轉扭蛋邏輯
+        const drawBtn = document.getElementById('drawBtn');
+        const capsule = document.getElementById('capsule');
+        const resultCard = document.getElementById('resultCard');
+        const resTitle = document.getElementById('resTitle');
+        const resQuote = document.getElementById('resQuote');
+        const resTip = document.getElementById('resTip');
+
+        drawBtn.addEventListener('click', () => {
+            // 隱藏舊結果、按鈕禁用、加入搖晃動畫
+            resultCard.style.display = 'none';
+            drawBtn.disabled = true;
+            drawBtn.innerText = "扭蛋轉動中...";
+            capsule.classList.add('shaking');
+
+            // 模擬 1.2 秒的轉動過程
+            setTimeout(() => {
+                capsule.classList.remove('shaking');
+                drawBtn.disabled = false;
+                drawBtn.innerText = "再轉一顆解憂扭蛋";
+
+                // 隨機抽選該心情下的金句
+                const data = database[currentMood];
+                const randomQuote = data.quotes[Math.floor(Math.random() * data.quotes.length)];
+
+                // 渲染結果
+                resTitle.innerText = data.title;
+                resQuote.innerText = randomQuote;
+                resTip.innerText = `💡 實踐小妙招：${data.tips}`;
+                resultCard.style.display = 'block';
+            }, 1200);
+        });
+    </script>
+</body>
+</html>
